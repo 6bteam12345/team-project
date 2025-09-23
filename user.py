@@ -123,7 +123,7 @@ if __name__ == "__main__":
         # 保存结果
         history_df.to_csv('training_history.csv', index=False)
         print("\n训练结果已保存到 training_history.csv")
-        print(f"学号: {student_id}")
+        print(f"学号: {3233054221}")
     else:
         print("程序终止：数据加载失败")
 
