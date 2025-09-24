@@ -1,0 +1,111 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+# ========== 简化字体设置 ==========
+# 直接使用默认字体，避免中文显示问题
+plt.rcParams['font.family'] = ['DejaVu Sans', 'Arial']  # 使用安全的英文字体
+plt.rcParams['axes.unicode_minus'] = False
+
+# ========== 线性回归模型 ==========
+class LinearRegression:
+    def __init__(self):
+        self.w = np.random.randn()
+        self.b = np.random.randn()
+
+    def forward(self, x):
+        return x * self.w + self.b
+
+    def train(self, x_data, y_data, lr=0.01, epochs=100):
+        history = []
+        for epoch in range(epochs):
+            y_pred = self.forward(x_data)
+            dw = np.mean(2 * (y_pred - y_data) * x_data)
+            db = np.mean(2 * (y_pred - y_data))
+            self.w -= lr * dw
+            self.b -= lr * db
+            loss = np.mean((y_pred - y_data) ** 2)
+            history.append({'w': self.w, 'b': self.b, 'loss': loss})
+        return pd.DataFrame(history)
+
+# ========== 数据加载 ==========
+def load_data(file_path):
+    try:
+        df = pd.read_csv(file_path)
+        print("\n=== 数据列名 ===")
+        print(df.columns.tolist())
+        print("\n=== 前5行数据 ===")
+        print(df.head())
+        return df.iloc[:, 0].values, df.iloc[:, 1].values
+    except Exception as e:
+        print(f"数据加载失败: {e}")
+        return None, None
+
+# ========== 可视化 ==========
+def visualize(history):
+    plt.figure(figsize=(14, 6))
+
+    # 第一幅图：w-loss关系
+    plt.subplot(1, 2, 1)
+    plt.plot(history['w'], history['loss'], 'b-', linewidth=2)
+    plt.title('Weight (w) vs Loss', fontsize=12)  # 改为英文标题
+    plt.xlabel('Weight (w)', fontsize=10)
+    plt.ylabel('Loss', fontsize=10)
+    plt.grid(True, alpha=0.3)
+
+    # 第二幅图：b-loss关系
+    plt.subplot(1, 2, 2)
+    plt.plot(history['b'], history['loss'], 'r-', linewidth=2)
+    plt.title('Bias (b) vs Loss', fontsize=12)  # 改为英文标题
+    plt.xlabel('Bias (b)', fontsize=10)
+    plt.ylabel('Loss', fontsize=10)
+    plt.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+
+    # 保存图片
+    try:
+        plt.savefig('loss_curves.png', dpi=300, bbox_inches='tight')
+        print("图表已保存为 loss_curves.png")
+    except Exception as e:
+        print(f"保存图片失败: {e}")
+
+    plt.show()
+
+# ========== 主程序 ==========
+if __name__ == "__main__":
+    # 配置参数 - 修改文件路径！
+    data_path = 'train.csv'  # 改为相对路径，把文件放在代码同一目录下
+    # 或者使用绝对路径：data_path = r'D:\namepy\.venv\train.csv'
+    
+    # 先检查文件是否存在
+    if not os.path.exists(data_path):
+        print(f"文件不存在: {data_path}")
+        print("请将 train.csv 文件放在以下位置之一:")
+        print("1. 与 hello.py 同一目录下")
+        print("2. 修改 data_path 变量为正确的绝对路径")
+        
+        # 创建测试数据继续运行
+        print("\n使用测试数据继续运行...")
+        np.random.seed(42)
+        x = np.random.randn(100)
+        y = 2 * x + 1 + 0.1 * np.random.randn(100)
+    else:
+        # 加载数据
+        x, y = load_data(data_path)
+
+    if x is not None:
+        # 训练模型
+        print("\n开始训练...")
+        model = LinearRegression()
+        history_df = model.train(x, y, epochs=200)
+
+        # 可视化
+        visualize(history_df)
+
+        # 保存结果
+        history_df.to_csv('training_history.csv', index=False)
+        print("\n训练结果已保存到 training_history.csv")
+        print(f"学号: 3233054221")
+        print(f"最终参数: w={model.w:.4f}, b={model.b:.4f}")
